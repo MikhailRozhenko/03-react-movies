@@ -7,6 +7,7 @@ import Loader from '../Loader/Loader';
 import MovieGrid from '../MovieGrid/MovieGrid';
 import MovieModal from '../MovieModal/MovieModal';
 import SearchBar from '../SearchBar/SearchBar';
+import css from './App.module.css';
 
 export default function App() {
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,7 @@ export default function App() {
     }
   };
   return (
-    <>
+    <div className={css.app}>
       <SearchBar onSubmit={handleSearch} />
       {loading && <Loader />}
       {isError && <ErrorMessage />}
@@ -54,6 +55,6 @@ export default function App() {
       {isModalOpen && selectedMovie && (
         <MovieModal onClose={closeModal} movie={selectedMovie} />
       )}
-    </>
+    </div>
   );
 }
