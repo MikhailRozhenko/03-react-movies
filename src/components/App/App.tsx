@@ -2,28 +2,58 @@ import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { searchFilms } from '../../services/movieService';
 import type { Movie } from '../../types/movie';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
+import Loader from '../Loader/Loader';
 import MovieGrid from '../MovieGrid/MovieGrid';
+import MovieModal from '../MovieModal/MovieModal';
 import SearchBar from '../SearchBar/SearchBar';
 
 export default function App() {
+  const [loading, setLoading] = useState(false);
   const [films, setFilms] = useState<Movie[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const openModal = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
+
+  const [isError, setIsError] = useState(false);
   const handleSearch = async (data: string) => {
-    setFilms([]);
-    const movies = await searchFilms(data);
-    console.log(movies);
+    try {
+      setFilms([]);
+      setLoading(true);
+      setIsError(false);
+      const movies = await searchFilms(data);
+      console.log(movies);
 
-    if (movies.length === 0) {
-      toast.error('No movies found for your request.');
-      return;
+      if (movies.length === 0) {
+        toast.error('No movies found for your request.');
+        return;
+      }
+
+      setFilms(movies);
+    } catch {
+      setIsError(true);
+    } finally {
+      setLoading(false);
     }
-
-    setFilms(movies);
   };
   return (
     <>
       <SearchBar onSubmit={handleSearch} />
+      {loading && <Loader />}
+      {isError && <ErrorMessage />}
       <Toaster position="top-center" reverseOrder={false} />
-      <MovieGrid movies={films} />
+      <MovieGrid movies={films} onSelect={openModal} />
+      {isModalOpen && selectedMovie && (
+        <MovieModal onClose={closeModal} movie={selectedMovie} />
+      )}
     </>
   );
 }
